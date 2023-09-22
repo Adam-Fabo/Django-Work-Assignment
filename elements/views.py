@@ -17,7 +17,7 @@ def import_element(request):
         data = request.data
     else:
         return Response({"error":"Wrong data type"}, status=status.HTTP_400_BAD_REQUEST)
-
+    
     # Iterate through data one element at a time
     for element in data:
 
@@ -34,16 +34,30 @@ def import_element(request):
         except (NameError) as e:
             return Response({"error" : f"Wrong element name {element_name}"}, status=status.HTTP_400_BAD_REQUEST)
         
-        # We can try to save data to DB
-        serializer = serializer(data=element_data)
-        if serializer.is_valid():
-            try:
-                serializer.save()
-            except (Exception) as e:
-                return Response({"error" : "Error occured while saving data", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        else:
-            return Response({"error" : serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        # Try to get element if already exists
+        try:
+            # Get correct model based on element name
+            model = get_model(element_name)
+            # Get element from DB
+            element = model.objects.get(id=element_data["id"])
+            serializer = serializer(element,data=element_data)
+        except (NameError,KeyError, model.DoesNotExist) as e:
+            serializer = serializer(data=element_data)
+
+        try:
+
+            # Save the data
+            if serializer.is_valid(raise_exception=True):
+                try:
+                    serializer.save()
+                except (Exception) as e:
+                    return Response({"error" : "Error occured while saving data", "message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({"error" : serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
         
+        except (KeyError) as e:
+            return Response({"error" : "Wrong Json format"}, status=status.HTTP_400_BAD_REQUEST)
+    
     return Response({"success" : data}, status=status.HTTP_201_CREATED)
 
 
