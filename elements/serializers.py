@@ -2,53 +2,85 @@ from rest_framework import serializers
 from elements.models import AttributeValue, AttributeName, Attribute, Product, ProductAttributes, Image, ProductImage, Catalog
 
 
-class AttributeValueSerializer(serializers.ModelSerializer):
+class CustomModelSerializer(serializers.ModelSerializer):
+    """ Custom serializer that allows to map field names """
+    aliases = {}
 
+    def to_representation(self, instance):
+        # Map aliases when serializing
+        data = super().to_representation(instance)
+        for key in self.aliases: 
+            try: 
+                data[self.aliases[key]] = data[key]
+                del data[key] 
+            except: pass
+        return data
+
+    def to_internal_value(self, data):
+        # Map aliases when de-serializing
+        for key in self.aliases: 
+            try:
+                data[key] = data[self.aliases[key]]
+                del data[self.aliases[key]]
+            except: pass
+        return super().to_internal_value(data)
+
+
+
+class AttributeValueSerializer(CustomModelSerializer):
+    aliases = {'hodnota': 'value'}
     class Meta:
         model = AttributeValue
-        fields = '__all__'
+        fields = ('id','value')
 
 
-class AttributeNameSerializer(serializers.ModelSerializer):
+class AttributeNameSerializer(CustomModelSerializer):
+    aliases = {'name': 'nazev', 'code': 'kod', 'show': 'zobrazit'}
     class Meta:
         model = AttributeName
-        fields = '__all__' #['id','nazev','code', 'show']
+        fields = ('id','name','code', 'show')
 
 
-class AttributeSerializer(serializers.ModelSerializer):
+class AttributeSerializer(CustomModelSerializer):
+    aliases = {'nazev_atributu_id': 'attribute_name', 'hodnota_atributu_id': 'attribute_value'}
     class Meta:
         model = Attribute
-        fields = '__all__'
+        fields = ('id', 'attribute_name', 'attribute_value')
 
 
-class ProductSerializer(serializers.ModelSerializer):
+class ProductSerializer(CustomModelSerializer):
+    aliases = {'nazev': 'name', 'description': 'popis', 'cena': 'cost', 'mena': 'currency', 'published_on': 'published_on', 'is_published': 'is_published'}
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = ('id', 'name', 'description', 'cost', 'currency', 'published_on', 'is_published')
 
 
-class ProductAttributesSerializer(serializers.ModelSerializer):
+class ProductAttributesSerializer(CustomModelSerializer):
     class Meta:
         model = ProductAttributes
-        fields = '__all__'  
+        fields = ('id','product','attribute')
 
 
-class ImageSerializer(serializers.ModelSerializer):
+class ImageSerializer(CustomModelSerializer):
+    aliases = {'nazev': 'name', 'obrazek': 'image'}
     class Meta:
         model = Image
-        fields = '__all__'
+        fields = ('id', 'name', 'image')
 
 
-class ProductImageSerializer(serializers.ModelSerializer):
+class ProductImageSerializer(CustomModelSerializer):
+    aliases = {'nazev': 'name', 'produkt_id': 'product', 'obrazek_id': 'image_id'}
     class Meta:
         model = ProductImage
-        fields = '__all__'
+        fields = ('id','name','product','image_id')
 
 
-class CatalogSerializer(serializers.ModelSerializer):
+class CatalogSerializer(CustomModelSerializer):
+    aliases = {'nazev': 'name', 'obrazek_id': 'image'}
     class Meta:
         model = Catalog
-        fields = '__all__'
+        fields = ('id','name','image','products_ids','attributes_ids')
+
 
 def get_serializer(element_name):
     if element_name == "AttributeValue":
