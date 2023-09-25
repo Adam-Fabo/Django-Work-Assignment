@@ -28,7 +28,7 @@ class CustomModelSerializer(serializers.ModelSerializer):
 
 
 class AttributeValueSerializer(CustomModelSerializer):
-    aliases = {'hodnota': 'value'}
+    aliases = {'value': 'hodnota'}
     class Meta:
         model = AttributeValue
         fields = ('id','value')
@@ -42,14 +42,14 @@ class AttributeNameSerializer(CustomModelSerializer):
 
 
 class AttributeSerializer(CustomModelSerializer):
-    aliases = {'nazev_atributu_id': 'attribute_name', 'hodnota_atributu_id': 'attribute_value'}
+    aliases = {'attribute_name': 'nazev_atributu_id', 'attribute_value': 'hodnota_atributu_id'}
     class Meta:
         model = Attribute
         fields = ('id', 'attribute_name', 'attribute_value')
 
 
 class ProductSerializer(CustomModelSerializer):
-    aliases = {'nazev': 'name', 'description': 'popis', 'cena': 'cost', 'mena': 'currency', 'published_on': 'published_on', 'is_published': 'is_published'}
+    aliases = {'name': 'nazev', 'description': 'popis', 'cost': 'cena', 'currency': 'mena'}
     class Meta:
         model = Product
         fields = ('id', 'name', 'description', 'cost', 'currency', 'published_on', 'is_published')
@@ -62,21 +62,21 @@ class ProductAttributesSerializer(CustomModelSerializer):
 
 
 class ImageSerializer(CustomModelSerializer):
-    aliases = {'nazev': 'name', 'obrazek': 'image'}
+    aliases = {'name': 'nazev', 'image': 'obrazek'}
     class Meta:
         model = Image
         fields = ('id', 'name', 'image')
 
 
 class ProductImageSerializer(CustomModelSerializer):
-    aliases = {'nazev': 'name', 'produkt_id': 'product', 'obrazek_id': 'image_id'}
+    aliases = {'name': 'nazev', 'product': 'produkt_id', 'image_id': 'obrazek_id'}
     class Meta:
         model = ProductImage
         fields = ('id','name','product','image_id')
 
 
 class CatalogSerializer(CustomModelSerializer):
-    aliases = {'nazev': 'name', 'obrazek_id': 'image'}
+    aliases = {'name': 'nazev', 'image': 'obrazek_id'}
     class Meta:
         model = Catalog
         fields = ('id','name','image','products_ids','attributes_ids')
